@@ -5,24 +5,37 @@ using UnityEngine;
 
 public class DrawManager : MonoBehaviour
 {
+    // file link
+    public static string fileLink = "C:\\Temp\\data.dat";
 
+    // circle palette info
+    public ArrayList ArrayofCirclePalette;
     public GameObject CirclePalettePrefab;
     private GameObject circlePalette;
     private DrawCircle drawCircle;
 
+    // line palette info
+    public ArrayList ArrayofLinePalette;
     public GameObject LinePalettePrefab;
     private GameObject linePalette;
     private DrawLine drawLine;
 
+    // line info
     private ArrayList InfoOfLines;
     private Line line;
 
+    // bool
     private bool drawingMode;
+    private bool lineRendererStatus;
 
     public void SetOnDrawingMode()
     {
         drawingMode = true;
         line = new Line();
+
+        ArrayofLinePalette = new ArrayList();
+        ArrayofCirclePalette = new ArrayList();
+
         SetLinePalette();
     }
     public void SetOffDrawingMode()
@@ -33,7 +46,7 @@ public class DrawManager : MonoBehaviour
     }
     public void DoSaveLineInfo()
     {
-        using (StreamWriter streamWriter = new StreamWriter(@"C:\Temp\data.dat")) 
+        using (StreamWriter streamWriter = new StreamWriter(fileLink)) 
         {
             foreach( Line i in InfoOfLines )
             {
@@ -53,7 +66,7 @@ public class DrawManager : MonoBehaviour
 
         string readLine;
 
-        using (StreamReader streamReader = new StreamReader(@"C:\Temp\data.dat"))
+        using (StreamReader streamReader = new StreamReader(fileLink))
         {
             while ( ( readLine = streamReader.ReadLine() ) != null )
             {
@@ -68,7 +81,7 @@ public class DrawManager : MonoBehaviour
                 // convert string type to float type
                 float[] subFloats = new float[subStrings.Length];
 
-                int i = 0;
+                int i = 0; 
                 foreach( string subString in subStrings )
                 {
                     if( ! subString.Equals("") )
@@ -93,17 +106,48 @@ public class DrawManager : MonoBehaviour
             SetOffDrawingMode();
         }
     }
+    public void SetOnOffLineRendererStatus()
+    {
+        if(lineRendererStatus)
+        {
+            lineRendererStatus = false;
+        }
+        else
+        {
+            lineRendererStatus = true;
+        }
+
+        SetShowHideLineRenderer();
+    }
+    public void SetShowHideLineRenderer()
+    {
+        Renderer renderer;
+
+        foreach( GameObject linePaletteObject in ArrayofLinePalette )
+        {
+            renderer = linePaletteObject.GetComponent<Renderer>();
+            renderer.enabled = lineRendererStatus;
+        }
+        foreach( GameObject circlePaletteObject in ArrayofCirclePalette )
+        {
+            renderer = circlePaletteObject.GetComponent<Renderer>();
+            renderer.enabled = lineRendererStatus;
+
+        }
+    }
 
     public void DrawCircle( int index )
     {
         //GameObject circlePalette = transform.Find("CirclePalette").gameObject;
         circlePalette = Instantiate(CirclePalettePrefab, this.transform);
+        ArrayofCirclePalette.Add(circlePalette);
         drawCircle = (DrawCircle)circlePalette.GetComponent(typeof(DrawCircle));
         drawCircle.Draw( line.GetNode(index-1) );
     }
     public void SetLinePalette()
     {
         linePalette = Instantiate(LinePalettePrefab, this.transform);
+        ArrayofLinePalette.Add(linePalette);
         drawLine = (DrawLine)linePalette.GetComponent(typeof(DrawLine));
         drawLine.SetLineRenderer();
     }
@@ -117,6 +161,7 @@ public class DrawManager : MonoBehaviour
         InfoOfLines = new ArrayList();
 
         drawingMode = false;
+        lineRendererStatus = true;
 
 	}
 	void Update ()
