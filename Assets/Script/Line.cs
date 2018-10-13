@@ -15,7 +15,7 @@ public class Line
     {
         infoOfNodes.Add(newNode);
 
-        Debug.Log( GetLineSize() + " node : " + newNode.x + ", " + newNode.y + ", " + newNode.z );
+        //Debug.Log( GetLineSize() + " node : " + newNode.x + ", " + newNode.y + ", " + newNode.z );
     }
     public Vector3 GetNode(int index)
     {

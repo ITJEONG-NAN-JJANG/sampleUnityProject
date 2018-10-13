@@ -2,20 +2,22 @@
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class DrawManager : MonoBehaviour
 {
     // file link
     public static string fileLink = "C:\\Temp\\data.dat";
+    public static int MAX_LAYER = 4;
 
     // circle palette info
-    public ArrayList ArrayofCirclePalette;
+    public ArrayList []ArrayofCirclePalette;
     public GameObject CirclePalettePrefab;
     private GameObject circlePalette;
     private DrawCircle drawCircle;
 
     // line palette info
-    public ArrayList ArrayofLinePalette;
+    public ArrayList []ArrayofLinePalette;
     public GameObject LinePalettePrefab;
     private GameObject linePalette;
     private DrawLine drawLine;
@@ -24,23 +26,66 @@ public class DrawManager : MonoBehaviour
     private ArrayList InfoOfLines;
     private Line line;
 
-    // bool
-    private bool drawingMode;
-    private bool lineRendererStatus;
+    // status value
+    private int drawingMode;
+    private bool []lineRendererStatus;
 
-    public void SetOnDrawingMode()
+    public void onClickLayer1()
     {
-        drawingMode = true;
-        line = new Line();
+        SetOnOffLineRendererStatus(1);
+    }
+    public void onClickLayer2()
+    {
+        SetOnOffLineRendererStatus(2);
+    }
+    public void onClickLayer3()
+    {
+        SetOnOffLineRendererStatus(3);
+    }
+    public void onClickLayer4()
+    {
+        SetOnOffLineRendererStatus(4);
+    }
 
-        ArrayofLinePalette = new ArrayList();
-        ArrayofCirclePalette = new ArrayList();
+    public void onClickDraw1()
+    {
+        if (drawingMode != 0)
+            SetOffDrawingMode();
+
+        SetOnDrawingMode(1);
+    }
+    public void onClickDraw2()
+    {
+        if (drawingMode != 0)
+            SetOffDrawingMode();
+
+        SetOnDrawingMode(2);
+    }
+    public void onClickDraw3()
+    {
+        if (drawingMode != 0)
+            SetOffDrawingMode();
+
+        SetOnDrawingMode(3);
+    }
+    public void onClickDraw4()
+    {
+        if (drawingMode != 0)
+            SetOffDrawingMode();
+
+        SetOnDrawingMode(4);
+    }
+
+    private void SetOnDrawingMode(int index)
+    {
+        drawingMode = index;
+        line = new Line();
 
         SetLinePalette();
     }
     public void SetOffDrawingMode()
     {
-        drawingMode = false;
+        drawingMode = 0;
         if (line == null) return;
         if( line.GetLineSize() > 1 ) InfoOfLines.Add(line);
     }
@@ -92,7 +137,7 @@ public class DrawManager : MonoBehaviour
 
                 // draw using imported float values
                 SetOffDrawingMode();
-                SetOnDrawingMode();
+                //SetOnDrawingMode(index);
 
                 for( int j = 0; j < i/3; j++ )
                 {
@@ -106,32 +151,38 @@ public class DrawManager : MonoBehaviour
             SetOffDrawingMode();
         }
     }
-    public void SetOnOffLineRendererStatus()
+    private void SetOnOffLineRendererStatus(int index)
     {
-        if(lineRendererStatus)
+        index--;
+
+        Debug.Log("SetOnOffLineRendererStatus's index : " + index);
+
+        if(lineRendererStatus[index])
         {
-            lineRendererStatus = false;
+            lineRendererStatus[index] = false;
         }
         else
         {
-            lineRendererStatus = true;
+            lineRendererStatus[index] = true;
         }
 
-        SetShowHideLineRenderer();
+        SetShowHideLineRenderer(index);
     }
-    public void SetShowHideLineRenderer()
+    private void SetShowHideLineRenderer(int index)
     {
+        if (ArrayofLinePalette.Length == 0 || ArrayofCirclePalette.Length == 0 ) return;
+
         Renderer renderer;
 
-        foreach( GameObject linePaletteObject in ArrayofLinePalette )
+        foreach( GameObject linePaletteObject in ArrayofLinePalette[index] )
         {
             renderer = linePaletteObject.GetComponent<Renderer>();
-            renderer.enabled = lineRendererStatus;
+            renderer.enabled = lineRendererStatus[index];
         }
-        foreach( GameObject circlePaletteObject in ArrayofCirclePalette )
+        foreach( GameObject circlePaletteObject in ArrayofCirclePalette[index] )
         {
             renderer = circlePaletteObject.GetComponent<Renderer>();
-            renderer.enabled = lineRendererStatus;
+            renderer.enabled = lineRendererStatus[index];
 
         }
     }
@@ -140,14 +191,14 @@ public class DrawManager : MonoBehaviour
     {
         //GameObject circlePalette = transform.Find("CirclePalette").gameObject;
         circlePalette = Instantiate(CirclePalettePrefab, this.transform);
-        ArrayofCirclePalette.Add(circlePalette);
+        ArrayofCirclePalette[drawingMode-1].Add(circlePalette);
         drawCircle = (DrawCircle)circlePalette.GetComponent(typeof(DrawCircle));
         drawCircle.Draw( line.GetNode(index-1) );
     }
     public void SetLinePalette()
     {
         linePalette = Instantiate(LinePalettePrefab, this.transform);
-        ArrayofLinePalette.Add(linePalette);
+        ArrayofLinePalette[drawingMode-1].Add(linePalette);
         drawLine = (DrawLine)linePalette.GetComponent(typeof(DrawLine));
         drawLine.SetLineRenderer();
     }
@@ -158,15 +209,26 @@ public class DrawManager : MonoBehaviour
 
     void Start ()
     {
+        // initial arrayList
+        ArrayofCirclePalette = new ArrayList[MAX_LAYER];
+        ArrayofLinePalette = new ArrayList[MAX_LAYER];
+        for (int i = 0; i < MAX_LAYER; i++)
+        {
+            ArrayofCirclePalette[i] = new ArrayList();
+            ArrayofLinePalette[i] = new ArrayList();
+        }
+
         InfoOfLines = new ArrayList();
 
-        drawingMode = false;
-        lineRendererStatus = true;
+        // initial status variable
+        drawingMode = 0;
+        lineRendererStatus = new bool[MAX_LAYER];
 
 	}
-	void Update ()
+
+    void Update ()
     {
-        if ( drawingMode )
+        if ( drawingMode > 0 )
         {
             if( Input.GetMouseButtonUp(0) )
             {
@@ -179,6 +241,8 @@ public class DrawManager : MonoBehaviour
 
                     DrawCircle( line.GetLineSize() );
                     DrawLine( line.GetLineSize() );
+
+                    Debug.Log("Draw Circle in " + drawingMode + " layer.");
                 }
             }
         }
