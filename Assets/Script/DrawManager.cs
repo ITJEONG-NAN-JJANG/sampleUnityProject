@@ -23,7 +23,7 @@ public class DrawManager : MonoBehaviour
     private DrawLine drawLine;
 
     // line info
-    private ArrayList InfoOfLines;
+    private ArrayList []InfoOfLines;
     private Line line;
 
     // status value
@@ -85,43 +85,57 @@ public class DrawManager : MonoBehaviour
     }
     public void SetOffDrawingMode()
     {
+        if (line == null || drawingMode == 0) return;
+
+        if ( line.GetLineSize() > 1 ) InfoOfLines[drawingMode-1].Add(line);
+
         drawingMode = 0;
-        if (line == null) return;
-        if( line.GetLineSize() > 1 ) InfoOfLines.Add(line);
+
     }
     public void DoSaveLineInfo()
     {
         using (StreamWriter streamWriter = new StreamWriter(fileLink)) 
         {
-            foreach( Line i in InfoOfLines )
+            for (int k = 0; k < MAX_LAYER; k++)
             {
-                string saveLine = "";
-                for( int j = 0; j < i.GetLineSize(); j++ )
-                {
-                    saveLine += i.GetNode(j).x + " " + i.GetNode(j).y + " " + i.GetNode(j).z + " ";
-                }
+                streamWriter.WriteLine("Layer");
 
-                //Debug.Log(saveLine);
-                streamWriter.WriteLine( saveLine );
+                foreach (Line i in InfoOfLines[k])
+                {
+                    string saveLine = "";
+                    for (int j = 0; j < i.GetLineSize(); j++)
+                    {
+                        saveLine += i.GetNode(j).x + " " + i.GetNode(j).y + " " + i.GetNode(j).z + " ";
+                    }
+
+                    //Debug.Log(saveLine);
+                    streamWriter.WriteLine(saveLine);
+                }
             }
         }
     }
     public void DoLoadLineInfo()
     {
-
         string readLine;
+
+        int indexer = 0;
 
         using (StreamReader streamReader = new StreamReader(fileLink))
         {
             while ( ( readLine = streamReader.ReadLine() ) != null )
             {
-                //Debug.Log("read data : " + readLine);
+                Debug.Log("read data : " + readLine);
 
                 //split data
                 string[] subStrings = readLine.Split();
 
                 // check its validity
-                if (subStrings.Length < 2) continue;
+                if (subStrings[0].Contains("Layer"))
+                {
+                    indexer++;
+                    continue;
+                }
+                else if (subStrings.Length < 2) continue;
 
                 // convert string type to float type
                 float[] subFloats = new float[subStrings.Length];
@@ -137,7 +151,7 @@ public class DrawManager : MonoBehaviour
 
                 // draw using imported float values
                 SetOffDrawingMode();
-                //SetOnDrawingMode(index);
+                SetOnDrawingMode(indexer);
 
                 for( int j = 0; j < i/3; j++ )
                 {
@@ -155,7 +169,7 @@ public class DrawManager : MonoBehaviour
     {
         index--;
 
-        Debug.Log("SetOnOffLineRendererStatus's index : " + index);
+        //Debug.Log("SetOnOffLineRendererStatus's index : " + index);
 
         if(lineRendererStatus[index])
         {
@@ -212,13 +226,14 @@ public class DrawManager : MonoBehaviour
         // initial arrayList
         ArrayofCirclePalette = new ArrayList[MAX_LAYER];
         ArrayofLinePalette = new ArrayList[MAX_LAYER];
+        InfoOfLines = new ArrayList[MAX_LAYER];
+
         for (int i = 0; i < MAX_LAYER; i++)
         {
             ArrayofCirclePalette[i] = new ArrayList();
             ArrayofLinePalette[i] = new ArrayList();
+            InfoOfLines[i] = new ArrayList();
         }
-
-        InfoOfLines = new ArrayList();
 
         // initial status variable
         drawingMode = 0;
@@ -242,7 +257,7 @@ public class DrawManager : MonoBehaviour
                     DrawCircle( line.GetLineSize() );
                     DrawLine( line.GetLineSize() );
 
-                    Debug.Log("Draw Circle in " + drawingMode + " layer.");
+                    //Debug.Log("Draw Circle in " + drawingMode + " layer.");
                 }
             }
         }
