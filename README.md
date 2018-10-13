@@ -1,2 +1,3 @@
 # 2018_unity
-unity sample project
+
+NGUI 관련 프로젝트
