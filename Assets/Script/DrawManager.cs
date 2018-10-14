@@ -32,8 +32,9 @@ public class DrawManager : MonoBehaviour
     private bool popUpStatus;
 
     // popUp
-    private GameObject popUpDot;
+    private GameObject popUpCircle;
     private GameObject popUpLine;
+    private ArrayList selectInfo;
 
     public void OnClickLayer1()
     {
@@ -129,7 +130,7 @@ public class DrawManager : MonoBehaviour
         {
             while ( ( readLine = streamReader.ReadLine() ) != null )
             {
-                Debug.Log("read data : " + readLine);
+                // Debug.Log("read data : " + readLine);
 
                 //split data
                 string[] subStrings = readLine.Split();
@@ -226,82 +227,134 @@ public class DrawManager : MonoBehaviour
         drawLine.AppendLine(index, line.GetNode(index-1) );
     }
 
-    // Dot PopUp
-    public void SetPopUpOn(Vector3 position)
+    // pop-up : circle
+    public void SetPopUpCircleOn(Vector3 position)
     {
         popUpStatus = true;
-        popUpDot.SetActive(popUpStatus);
-        Vector3 popUpStatusPosition = popUpDot.transform.position;
+        popUpCircle.SetActive(popUpStatus);
+        Vector3 popUpStatusPosition = popUpCircle.transform.position;
         popUpStatusPosition.x = position.x;
         popUpStatusPosition.y = position.y;
         popUpStatusPosition.z = 0;
-        popUpDot.transform.position = popUpStatusPosition;
+        popUpCircle.transform.position = popUpStatusPosition;
     }
-    public void SetPopUpDotOff( )
+    public void SetPopUpCircleOff( )
     {
-        Debug.Log("[CLICK] CANCEL");
+        // Debug.Log("[CLICK] CANCEL CIRCLE");
         popUpStatus = false;
-        popUpDot.SetActive(popUpStatus);
+        popUpCircle.SetActive(popUpStatus);
+        if( selectInfo == null)
+            selectInfo.Clear();
     }
-    public void OnClickMoveDot()
+    public void OnClickMoveCircle()
     {
 
     }
-    public void OnClickDeleteDot()
+    public void OnClickDeleteCircle()
     {
 
     }
-    public void OnClickCancel()
+    public void OnClickCancelCircle()
     {
-        SetPopUpDotOff();
+        SetPopUpCircleOff();
     }
-    private bool IsOnCircle(Vector3 clickPosition)
+    private ArrayList IsOnCircle(Vector3 clickPosition)
     {
+        ArrayList answer = new ArrayList();
         for (int k = 0; k < MAX_LAYER; k++)
         {
+            if (!lineRendererStatus[k]) continue;
+
             foreach (Line i in InfoOfLines[k])
             {
                 for (int j = 0; j < i.GetLineSize(); j++)
                 {
-                    Debug.Log("[VS0] " + clickPosition.x + ", " + clickPosition.y + ", " + clickPosition.z);
-                    Debug.Log("[VS1] " + i.GetNode(j).x + ", " + i.GetNode(j).y + ", " + i.GetNode(j).z);
-                    Debug.Log("[VS2] " + i.GetNode(j + 1).x + ", " + i.GetNode(j + 1).y + ", " + i.GetNode(j + 1).z);
+                    // Debug.Log("[VS0] " + clickPosition.x + ", " + clickPosition.y + ", " + clickPosition.z);
+                    // Debug.Log("[VS1] " + i.GetNode(j).x + ", " + i.GetNode(j).y + ", " + i.GetNode(j).z);
                     if (IsInCircleLocation(clickPosition, i.GetNode(j)))
                     {
-                        Debug.Log("[TRUE]");
-                        return true;
+                        // Debug.Log("[TRUE]");
+                        answer.Add(k);
+                        answer.Add(i);
+                        answer.Add(j);
+                        return answer;
                     }
                 }
             }
         }
-        Debug.Log("[FALSE]");
-        return false;
+        // Debug.Log("[FALSE]");
+        return null;
     }
     private bool IsInCircleLocation(Vector3 click, Vector3 pos)
     {
-        return false;
+        const float marginError = 2.0f;
+        const float realRadius = 1.0f;
+
+        if ( (pos.x - click.x) * (pos.x - click.x) + (pos.y - click.y) * (pos.y - click.y) <= (marginError + realRadius) * (marginError + realRadius) )
+            return true;
+        else
+            return false;
     }
-    private bool IsOnLine(Vector3 clickPosition)
+
+    // pop-up : line
+    public void SetPopUpLineOn(Vector3 position)
     {
+        popUpStatus = true;
+        popUpLine.SetActive(popUpStatus);
+        Vector3 popUpStatusPosition = popUpLine.transform.position;
+        popUpStatusPosition.x = position.x;
+        popUpStatusPosition.y = position.y;
+        popUpStatusPosition.z = 0;
+        popUpLine.transform.position = popUpStatusPosition;
+    }
+    public void SetPopUpLineOff()
+    {
+        // Debug.Log("[CLICK] CANCEL LINE");
+        popUpStatus = false;
+        popUpLine.SetActive(popUpStatus);
+        if (selectInfo == null)
+            selectInfo.Clear();
+    }
+    public void OnClickMoveLine()
+    {
+
+    }
+    public void OnClickDeleteLine()
+    {
+
+    }
+    public void OnClickCancelLine()
+    {
+        SetPopUpLineOff();
+    }
+    private ArrayList IsOnLine(Vector3 clickPosition)
+    {
+        ArrayList answer = new ArrayList();
+
         for (int k = 0; k < MAX_LAYER; k++)
         {
+            if (!lineRendererStatus[k]) continue;
+
             foreach (Line i in InfoOfLines[k])
             {
                 for (int j = 0; j < i.GetLineSize()-1; j++)
                 {
-                    Debug.Log("[VS0] " + clickPosition.x + ", " + clickPosition.y + ", " + clickPosition.z);
-                    Debug.Log("[VS1] " + i.GetNode(j).x + ", " + i.GetNode(j).y + ", " + i.GetNode(j).z);
-                    Debug.Log("[VS2] " + i.GetNode(j+1).x + ", " + i.GetNode(j+1).y + ", " + i.GetNode(j+1).z);
+                    // Debug.Log("[VS0] " + clickPosition.x + ", " + clickPosition.y + ", " + clickPosition.z);
+                    // Debug.Log("[VS1] " + i.GetNode(j).x + ", " + i.GetNode(j).y + ", " + i.GetNode(j).z);
+                    // Debug.Log("[VS2] " + i.GetNode(j+1).x + ", " + i.GetNode(j+1).y + ", " + i.GetNode(j+1).z);
                     if (IsInLineLocation(clickPosition, i.GetNode(j), i.GetNode(j + 1)))
                     {
-                        Debug.Log("[TRUE]");
-                        return true;
+                        // Debug.Log("[TRUE]");
+                        answer.Add(k);
+                        answer.Add(i);
+                        answer.Add(j);
+                        return answer;
                     }
                 }
             }
         }
-        Debug.Log("[FALSE]");
-        return false;
+        // Debug.Log("[FALSE]");
+        return null;
     }
     private bool IsInLineLocation(Vector3 click, Vector3 first, Vector3 last)
     {
@@ -341,22 +394,23 @@ public class DrawManager : MonoBehaviour
 
         // popUp Set
         popUpStatus = false;
-        popUpDot = GameObject.Find("PopUp");
-        // popUpLine = GameObject.Find("PopLine");
+        popUpCircle = GameObject.Find("PopUpCircle");
+        popUpLine = GameObject.Find("PopUpLine");
 
-        SetPopUpDotOff();
-
+        popUpCircle.SetActive(false);
+        popUpLine.SetActive(false);
     }
 
     void Update ()
     {
-        // Debug.Log("[REAL]" + popUpDot.transform.position.x + ", " + popUpDot.transform.position.y);
-        // Debug.Log("[STATUS] " + popUpDot.activeSelf );
+        // Debug.Log("[REAL]" + popUpCircle.transform.position.x + ", " + popUpCircle.transform.position.y);
+        // Debug.Log("[STATUS] " + popUpCircle.activeSelf );
         if( Input.GetMouseButtonDown(0) )
         {
+            Vector3 mousePosition = Input.mousePosition;
             if (drawingMode > 0)
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Ray ray = Camera.main.ScreenPointToRay(mousePosition);
                 RaycastHit hit;
 
                 if (Physics.Raycast(ray, out hit, Mathf.Infinity))
@@ -371,25 +425,41 @@ public class DrawManager : MonoBehaviour
             }
             else if( !popUpStatus )
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Ray ray = Camera.main.ScreenPointToRay(mousePosition);
                 RaycastHit hit;
                 if (Physics.Raycast(ray, out hit, Mathf.Infinity))
-                    if( IsOnLine(new Vector3(hit.point.x, hit.point.y, hit.point.z)) )
+                {
+                    selectInfo = IsOnCircle(new Vector3(hit.point.x, hit.point.y, hit.point.z));
+
+                    if (selectInfo != null)
+                    {
+                        Camera camera = GetComponent<Camera>();
+                        Vector3 pos = UICamera.mainCamera.ScreenToWorldPoint(mousePosition);
+                        //Debug.Log("[CIRCLE] " + pos.x + ", " + pos.y);
+                        SetPopUpCircleOn(new Vector3(pos.x, pos.y, 0));
+                    }
+                    else
+                    {
+                        selectInfo = IsOnLine(new Vector3(hit.point.x, hit.point.y, hit.point.z));
+
+                        if (selectInfo != null)
+                        {
+                            Camera camera = GetComponent<Camera>();
+                            Vector3 pos = UICamera.mainCamera.ScreenToWorldPoint(mousePosition);
+                            //Debug.Log("[LINE] " + pos.x + ", " + pos.y);
+                            SetPopUpLineOn(new Vector3(pos.x, pos.y, 0));
+                        }
+                    }
+                    /*
+                    if (!popUpStatus)
                     {
                         Camera camera = GetComponent<Camera>();
                         Vector3 pos = UICamera.mainCamera.ScreenToWorldPoint(Input.mousePosition);
-                        Debug.Log("[CLICK] " + pos.x + ", " + pos.y);
-                        SetPopUpOn(new Vector3(pos.x, pos.y, 0));
+                        Debug.Log("[CLICK] " + pos.x + ", " + pos.y); 
+                        //SetPopUpOn(new Vector3(pos.x, pos.y, 0));
                     }
-                /*
-                if (!popUpStatus)
-                {
-                    Camera camera = GetComponent<Camera>();
-                    Vector3 pos = UICamera.mainCamera.ScreenToWorldPoint(Input.mousePosition);
-                    Debug.Log("[CLICK] " + pos.x + ", " + pos.y); 
-                    //SetPopUpOn(new Vector3(pos.x, pos.y, 0));
+                    */
                 }
-                */
             }
         }
 	}
