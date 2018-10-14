@@ -255,6 +255,47 @@ public class DrawManager : MonoBehaviour
     {
         SetPopUpDotOff();
     }
+    private void IsOnCircle(Vector3 clickPosition)
+    {
+    }
+    private bool IsOnLine(Vector3 clickPosition)
+    {
+        for (int k = 0; k < MAX_LAYER; k++)
+        {
+            foreach (Line i in InfoOfLines[k])
+            {
+                for (int j = 0; j < i.GetLineSize()-1; j++)
+                {
+                    Debug.Log("[VS0] " + clickPosition.x + ", " + clickPosition.y + ", " + clickPosition.z);
+                    Debug.Log("[VS1] " + i.GetNode(j).x + ", " + i.GetNode(j).y + ", " + i.GetNode(j).z);
+                    Debug.Log("[VS2] " + i.GetNode(j+1).x + ", " + i.GetNode(j+1).y + ", " + i.GetNode(j+1).z);
+                    if (IsInLineLocation(clickPosition, i.GetNode(j), i.GetNode(j + 1)))
+                    {
+                        Debug.Log("[TRUE]");
+                        return true;
+                    }
+                }
+            }
+        }
+        Debug.Log("[FALSE]");
+        return false;
+    }
+    private bool IsInLineLocation(Vector3 click, Vector3 first, Vector3 last)
+    {
+        const float marginofError = 7.5f;
+
+        if( ( first.x > last.x ? last.x : first.x ) - marginofError <= click.x &&
+            ( first.x > last.x ? first.x : last.x ) + marginofError >= click.x &&
+            ( first.z > last.y ? last.z : first.z ) - marginofError <= click.z &&
+            ( first.z > last.z ? first.z : last.z ) + marginofError >= click.z &&
+            ( first.z - last.z - marginofError*2 ) / ( first.x - last.x + marginofError*2 ) >= ( first.z - click.z ) / ( first.x - click.x ) &&
+            ( first.z - last.z + marginofError*2 ) / ( first.x - last.x - marginofError*2 ) <= ( first.z - click.z ) / ( first.x - click.x ) &&
+            ( first.z - last.z - marginofError*2 ) / ( first.x - last.x + marginofError*2 ) >= ( last.z - click.z ) / ( last.x - click.x ) &&
+            ( first.z - last.z + marginofError*2 ) / ( first.x - last.x - marginofError*2 ) <= ( last.z - click.z ) / ( last.x - click.x ) )
+            return true;
+        else
+            return false;
+    }
 
     void Start ()
     {
@@ -285,8 +326,8 @@ public class DrawManager : MonoBehaviour
 
     void Update ()
     {
-        Debug.Log("[REAL]" + popUpDot.transform.position.x + ", " + popUpDot.transform.position.y);
-        Debug.Log("[STATUS] " + popUpDot.activeSelf );
+        // Debug.Log("[REAL]" + popUpDot.transform.position.x + ", " + popUpDot.transform.position.y);
+        // Debug.Log("[STATUS] " + popUpDot.activeSelf );
         if( Input.GetMouseButtonDown(0) )
         {
             if (drawingMode > 0)
@@ -304,20 +345,25 @@ public class DrawManager : MonoBehaviour
                     //Debug.Log("Draw Circle in " + drawingMode + " layer.");
                 }
             }
-            else
+            else if( !popUpStatus )
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
-                if (Physics.Raycast(ray, out hit))
-                    Debug.Log(hit.transform.gameObject.name);
-
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+                    if( IsOnLine(new Vector3(hit.point.x, hit.point.y, hit.point.z)) )
+                    {
+                        Camera camera = GetComponent<Camera>();
+                        Vector3 pos = UICamera.mainCamera.ScreenToWorldPoint(Input.mousePosition);
+                        Debug.Log("[CLICK] " + pos.x + ", " + pos.y);
+                        SetPopUpOn(new Vector3(pos.x, pos.y, 0));
+                    }
                 /*
                 if (!popUpStatus)
                 {
                     Camera camera = GetComponent<Camera>();
                     Vector3 pos = UICamera.mainCamera.ScreenToWorldPoint(Input.mousePosition);
                     Debug.Log("[CLICK] " + pos.x + ", " + pos.y); 
-                    SetPopUpOn(new Vector3(pos.x, pos.y, 0));
+                    //SetPopUpOn(new Vector3(pos.x, pos.y, 0));
                 }
                 */
             }
