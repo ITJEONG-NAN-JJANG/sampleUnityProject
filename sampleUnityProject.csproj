@@ -360,6 +360,7 @@
     <Compile Include="Assets\NGUI\Scripts\UI\UITexture.cs" />
     <Compile Include="Assets\NGUI\Scripts\UI\UITooltip.cs" />
     <Compile Include="Assets\NGUI\Scripts\UI\UIViewport.cs" />
+    <Compile Include="Assets\Script\ButtonDelay.cs" />
     <Compile Include="Assets\Script\DrawCircle.cs" />
     <Compile Include="Assets\Script\DrawLine.cs" />
     <Compile Include="Assets\Script\DrawManager.cs" />

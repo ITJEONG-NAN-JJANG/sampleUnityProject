@@ -29,46 +29,51 @@ public class DrawManager : MonoBehaviour
     // status value
     private int drawingMode;
     private bool []lineRendererStatus;
+    private bool popUpStatus;
 
-    public void onClickLayer1()
+    // popUp
+    private GameObject popUpDot;
+    private GameObject popUpLine;
+
+    public void OnClickLayer1()
     {
         SetOnOffLineRendererStatus(1);
     }
-    public void onClickLayer2()
+    public void OnClickLayer2()
     {
         SetOnOffLineRendererStatus(2);
     }
-    public void onClickLayer3()
+    public void OnClickLayer3()
     {
         SetOnOffLineRendererStatus(3);
     }
-    public void onClickLayer4()
+    public void OnClickLayer4()
     {
         SetOnOffLineRendererStatus(4);
     }
 
-    public void onClickDraw1()
+    public void OnClickDraw1()
     {
         if (drawingMode != 0)
             SetOffDrawingMode();
 
         SetOnDrawingMode(1);
     }
-    public void onClickDraw2()
+    public void OnClickDraw2()
     {
         if (drawingMode != 0)
             SetOffDrawingMode();
 
         SetOnDrawingMode(2);
     }
-    public void onClickDraw3()
+    public void OnClickDraw3()
     {
         if (drawingMode != 0)
             SetOffDrawingMode();
 
         SetOnDrawingMode(3);
     }
-    public void onClickDraw4()
+    public void OnClickDraw4()
     {
         if (drawingMode != 0)
             SetOffDrawingMode();
@@ -221,6 +226,36 @@ public class DrawManager : MonoBehaviour
         drawLine.AppendLine(index, line.GetNode(index-1) );
     }
 
+    // Dot PopUp
+    public void SetPopUpOn(Vector3 position)
+    {
+        popUpStatus = true;
+        popUpDot.SetActive(popUpStatus);
+        Vector3 popUpStatusPosition = popUpDot.transform.position;
+        popUpStatusPosition.x = position.x;
+        popUpStatusPosition.y = position.y;
+        popUpStatusPosition.z = 0;
+        popUpDot.transform.position = popUpStatusPosition;
+    }
+    public void SetPopUpDotOff( )
+    {
+        Debug.Log("[CLICK] CANCEL");
+        popUpStatus = false;
+        popUpDot.SetActive(popUpStatus);
+    }
+    public void OnClickMoveDot()
+    {
+
+    }
+    public void OnClickDeleteDot()
+    {
+
+    }
+    public void OnClickCancel()
+    {
+        SetPopUpDotOff();
+    }
+
     void Start ()
     {
         // initial arrayList
@@ -239,26 +274,52 @@ public class DrawManager : MonoBehaviour
         drawingMode = 0;
         lineRendererStatus = new bool[MAX_LAYER];
 
-	}
+        // popUp Set
+        popUpStatus = false;
+        popUpDot = GameObject.Find("PopUp");
+        // popUpLine = GameObject.Find("PopLine");
+
+        SetPopUpDotOff();
+
+    }
 
     void Update ()
     {
-        if ( drawingMode > 0 )
+        Debug.Log("[REAL]" + popUpDot.transform.position.x + ", " + popUpDot.transform.position.y);
+        Debug.Log("[STATUS] " + popUpDot.activeSelf );
+        if( Input.GetMouseButtonDown(0) )
         {
-            if( Input.GetMouseButtonUp(0) )
+            if (drawingMode > 0)
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
 
-                if ( Physics.Raycast(ray, out hit, Mathf.Infinity) )
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity))
                 {
-                    line.AddNodes( new Vector3( hit.point.x, hit.point.y, hit.point.z ));
+                    line.AddNodes(new Vector3(hit.point.x, hit.point.y, hit.point.z));
 
-                    DrawCircle( line.GetLineSize() );
-                    DrawLine( line.GetLineSize() );
+                    DrawCircle(line.GetLineSize());
+                    DrawLine(line.GetLineSize());
 
                     //Debug.Log("Draw Circle in " + drawingMode + " layer.");
                 }
+            }
+            else
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit))
+                    Debug.Log(hit.transform.gameObject.name);
+
+                /*
+                if (!popUpStatus)
+                {
+                    Camera camera = GetComponent<Camera>();
+                    Vector3 pos = UICamera.mainCamera.ScreenToWorldPoint(Input.mousePosition);
+                    Debug.Log("[CLICK] " + pos.x + ", " + pos.y); 
+                    SetPopUpOn(new Vector3(pos.x, pos.y, 0));
+                }
+                */
             }
         }
 	}
