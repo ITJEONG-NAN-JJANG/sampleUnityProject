@@ -255,8 +255,31 @@ public class DrawManager : MonoBehaviour
     {
         SetPopUpDotOff();
     }
-    private void IsOnCircle(Vector3 clickPosition)
+    private bool IsOnCircle(Vector3 clickPosition)
     {
+        for (int k = 0; k < MAX_LAYER; k++)
+        {
+            foreach (Line i in InfoOfLines[k])
+            {
+                for (int j = 0; j < i.GetLineSize(); j++)
+                {
+                    Debug.Log("[VS0] " + clickPosition.x + ", " + clickPosition.y + ", " + clickPosition.z);
+                    Debug.Log("[VS1] " + i.GetNode(j).x + ", " + i.GetNode(j).y + ", " + i.GetNode(j).z);
+                    Debug.Log("[VS2] " + i.GetNode(j + 1).x + ", " + i.GetNode(j + 1).y + ", " + i.GetNode(j + 1).z);
+                    if (IsInCircleLocation(clickPosition, i.GetNode(j)))
+                    {
+                        Debug.Log("[TRUE]");
+                        return true;
+                    }
+                }
+            }
+        }
+        Debug.Log("[FALSE]");
+        return false;
+    }
+    private bool IsInCircleLocation(Vector3 click, Vector3 pos)
+    {
+        return false;
     }
     private bool IsOnLine(Vector3 clickPosition)
     {
@@ -284,14 +307,15 @@ public class DrawManager : MonoBehaviour
     {
         const float marginofError = 7.5f;
 
-        if( ( first.x > last.x ? last.x : first.x ) - marginofError <= click.x &&
-            ( first.x > last.x ? first.x : last.x ) + marginofError >= click.x &&
-            ( first.z > last.y ? last.z : first.z ) - marginofError <= click.z &&
-            ( first.z > last.z ? first.z : last.z ) + marginofError >= click.z &&
-            ( first.z - last.z - marginofError*2 ) / ( first.x - last.x + marginofError*2 ) >= ( first.z - click.z ) / ( first.x - click.x ) &&
-            ( first.z - last.z + marginofError*2 ) / ( first.x - last.x - marginofError*2 ) <= ( first.z - click.z ) / ( first.x - click.x ) &&
-            ( first.z - last.z - marginofError*2 ) / ( first.x - last.x + marginofError*2 ) >= ( last.z - click.z ) / ( last.x - click.x ) &&
-            ( first.z - last.z + marginofError*2 ) / ( first.x - last.x - marginofError*2 ) <= ( last.z - click.z ) / ( last.x - click.x ) )
+        if( ( first.x > last.x ? last.x : first.x ) - marginofError <= click.x
+          &&( first.x > last.x ? first.x : last.x ) + marginofError >= click.x
+          &&( first.z > last.y ? last.z : first.z ) - marginofError <= click.z
+          &&( first.z > last.z ? first.z : last.z ) + marginofError >= click.z
+          //&&( first.z - last.z - marginofError*2 ) / ( first.x - last.x + marginofError*2 ) >= ( first.z - click.z ) / ( first.x - click.x )
+          //&&( first.z - last.z + marginofError*2 ) / ( first.x - last.x - marginofError*2 ) <= ( first.z - click.z ) / ( first.x - click.x )
+          //&&( first.z - last.z - marginofError*2 ) / ( first.x - last.x + marginofError*2 ) >= ( last.z - click.z ) / ( last.x - click.x )
+          //&&( first.z - last.z + marginofError*2 ) / ( first.x - last.x - marginofError*2 ) <= ( last.z - click.z ) / ( last.x - click.x )
+          )
             return true;
         else
             return false;
